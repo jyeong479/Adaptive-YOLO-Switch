@@ -2,6 +2,13 @@
 
 본 저장소는 환경 변화(시간, 날씨)에 따른 **YOLO 모델 스위칭 전략** 연구를 위한 데이터 전처리 및 증강 파이프라인을 포함함
 
+
+## 📂 데이터셋 (Datasets)
+본 연구에는 **AI 허브(AI Hub)** 에서 제공하는 국내 도로 환경 데이터셋을 사용함
+
+* **[시내도로]** [교통문제 해결을 위한 CCTV 교통 영상(시내도로)](https://aihub.or.kr/aihubdata/data/view.do?currMenu=115&topMenu=100&dataSetSn=165)
+* **[고속도로]** [교통문제 해결을 위한 CCTV 교통 영상(고속도로)](https://aihub.or.kr/aihubdata/data/view.do?currMenu=115&topMenu=100&dataSetSn=164)
+
 ## 📋 연구 프로세스 (Research Workflow)
 
 ### 1️ 데이터 추출 (Extraction)
