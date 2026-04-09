@@ -4,12 +4,12 @@
 
 ## 📋 연구 프로세스 (Research Workflow)
 
-### 1️⃣ 데이터 추출 (Extraction)
+### 1️ 데이터 추출 (Extraction)
 * `unzip_data.py`: 원천 데이터셋 압축 해제 및 초기 디렉토리 구조 생성
 
 ---
 
-### 2️⃣ 데이터 정제 및 통합 (Pre-processing)
+### 2️ 데이터 정제 및 통합 (Pre-processing)
 `preprocess_yolo.py`, `preprocess_yolo_highway.py`를 통한 데이터 무결성 확보 및 라벨 체계 통합
 
 * **데이터 클리닝**:
@@ -28,12 +28,12 @@
 
 ---
 
-### 3️⃣ 데이터셋 병합 (Merging)
+### 3️ 데이터셋 병합 (Merging)
 * `merge_dataset.py`: 전처리 완료된 이종 데이터셋을 단일 통합 학습 셋으로 병합
 
 ---
 
-### 4️⃣ 데이터 증강 (Augmentation)
+### 4️ 데이터 증강 (Augmentation)
 환경 변화 대응력 강화를 위한 2단계 증강 전략 수행
 
 #### **A. 광학적 증강 (Light Augmentation)**
