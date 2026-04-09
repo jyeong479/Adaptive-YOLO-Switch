@@ -6,10 +6,10 @@ from PIL import Image
 # ---------------------------------------------------------
 # 1. 설정 영역
 # ---------------------------------------------------------
-DATA_ROOT = './101.교통문제_해결을_위한_CCTV_교통_데이터(시내도로)/01.데이터/1.Training'
+DATA_ROOT = './101.교통문제_해결을_위한_CCTV_교통_데이터(시내도로)/01.데이터/2.Validation'
 
 # 새롭게 저장될 최상위 폴더명
-YOLO_OUTPUT_DIR = './yolo_dataset101/train' 
+YOLO_OUTPUT_DIR = './yolo_dataset101/val' 
 
 # 표 2, 3번 작업: 클래스 통합 매핑 딕셔너리
 CLASS_MAPPING = {
@@ -32,18 +32,47 @@ def build_image_index(root_dir):
     print(f"총 {len(img_dict)}개의 이미지를 찾았습니다!\n")
     return img_dict
 
-def get_condition_folder(time_str, weather):
+def get_condition_folder(date_str, time_str, weather):
+    # 월별 주간(Day) 기준 시간 설정: (시, 분)
+    month_day_times = {
+        1:  ((7, 45), (17, 35)),
+        2:  ((7, 20), (18, 10)),
+        3:  ((6, 40), (18, 40)),
+        4:  ((6, 0),  (19, 10)),
+        5:  ((5, 20), (19, 35)),
+        6:  ((5, 5),  (19, 50)), # 가장 해가 긴 시기
+        7:  ((5, 20), (19, 50)),
+        8:  ((5, 45), (19, 25)),
+        9:  ((6, 10), (18, 45)),
+        10: ((6, 40), (18, 0)),
+        11: ((7, 15), (17, 20)),
+        12: ((7, 40), (17, 15))
+    }
+
     try:
-        # "18:59:58" 에서 "18"만 추출
-        hour = int(time_str.split(':')[0])
+        # "2020-10-14" 에서 월(10) 추출
+        month = int(date_str.split('-')[1])
         
-        # 아침 7시 ~ 저녁 6시(18시 59분)까지만 Day로 엄격하게 판별
-        if 7 <= hour <= 18:
+        # "18:59:58" 에서 시간과 분 추출
+        time_parts = time_str.split(':')
+        hour = int(time_parts[0])
+        minute = int(time_parts[1])
+        
+        # 분 단위로 환산하여 계산 (비교를 용이하게 하기 위함)
+        current_minutes = hour * 60 + minute
+        
+        # 해당 월의 일출/일몰 시간 가져오기 (예외 시 기본값 7시~18시)
+        sunrise, sunset = month_day_times.get(month, ((7, 0), (18, 0)))
+        sunrise_minutes = sunrise[0] * 60 + sunrise[1]
+        sunset_minutes = sunset[0] * 60 + sunset[1]
+        
+        # 월별 일출 일몰 시간에 따라 Day / Night 판별
+        if sunrise_minutes <= current_minutes <= sunset_minutes:
             day_night = 'day'
         else:
             day_night = 'night'
     except:
-        day_night = 'day' # 시간 정보가 이상할 경우 기본값
+        day_night = 'day' # 날짜/시간 정보 파싱 실패 시 기본값
         
     if weather.lower() == 'sunny':
         weather_cond = 'clear'
@@ -73,9 +102,13 @@ def process_datasets():
             for img in data.get('images', [])
         }
         
-        # meta_id로 [시간대, 날씨]를 찾기 위한 딕셔너리 생성
+        # meta_id로 [날짜, 시간대, 날씨]를 찾기 위한 딕셔너리 생성 (date 추가됨)
         meta_dict = {
-            m['id']: {'time': m.get('time', '12:00:00'), 'weather': m.get('weather', '')}
+            m['id']: {
+                'date': m.get('date', '2020-01-01'), 
+                'time': m.get('time', '12:00:00'), 
+                'weather': m.get('weather', '')
+            }
             for m in data.get('meta', [])
         }
 
@@ -97,8 +130,10 @@ def process_datasets():
             meta_id = img_info['meta_id']
             
             # 메타데이터를 기반으로 저장될 하위 폴더 이름 결정 (예: day_clear)
-            meta_info = meta_dict.get(meta_id, {'time': '12:00:00', 'weather': 'Unknown'})
-            condition_folder_name = get_condition_folder(meta_info['time'], meta_info['weather'])
+            meta_info = meta_dict.get(meta_id, {'date': '2020-01-01', 'time': '12:00:00', 'weather': 'Unknown'})
+            
+            # date, time, weather를 모두 넘겨주도록 변경
+            condition_folder_name = get_condition_folder(meta_info['date'], meta_info['time'], meta_info['weather'])
             
             # 실제 컴퓨터에 존재하는 이미지 경로 찾기
             real_img_path = image_path_index.get(json_file_name)
